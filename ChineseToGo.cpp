@@ -29,14 +29,10 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
-//static std::array<std::ifstream infile("file.html");
-static std::wstring line; 
-static std::string line1;
-std::string line2;
-static std::array<std::vector<std::array<std::wstring,3>>,10> txt;
+std::array<std::vector<std::array<std::wstring,3>>,10> txt;
 
 static void initializare(int number){
-
+    std::wstring line;
     std::wifstream infile("file"+std::to_string(number+1)+".html");
     infile.imbue(std::locale("zh_CN.UTF-8"));
     int i = 0;
@@ -107,7 +103,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     for (int i = 0; i <  10; i++)
     {
         std::thread t(initializare,i);
-        t.join();
+        t.detach();
     }
     // TODO: Place code here.
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
@@ -246,13 +242,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_PAINT:
         {
+        unsigned seed = time(0);
+        srand(seed);
         int rndm = std::rand() % 10;
-        std::random_shuffle(txt[rndm].begin(),txt[rndm].end());
+        int rndm1 = std::rand() % (txt[rndm].size() - 1);
         FontFamily   fontFamily(L"SimSun");
         Font         myFont(&fontFamily, 40, FontStyleBold, UnitPoint);  
         PointF origin(200.0f, 200.0f);
         SolidBrush blackBrush(Color(255, 255, 0, 0));
-        std::wstring str= txt[rndm][0][0]+ L" " + txt[rndm][0][1] + L" " + txt[rndm][0][2];
+        std::wstring str= txt[rndm][rndm1][0]+ L" " + txt[rndm][rndm1][1] + L" " + txt[rndm][rndm1][2];
         StringFormat stringFormat;
         graphics.DrawString(str.c_str(), str.length(), &myFont, origin , &stringFormat, &blackBrush);
         }
